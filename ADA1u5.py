@@ -1,35 +1,29 @@
 import time
 import random
 
-# --- FUNCIONES DE IMPRESIÓN ---
 def mostrar_paso(paso, lista, comentario=""):
-    """Solo imprime si estamos en modo manual (pocos números)"""
     print(f"   [{paso}] {lista}  <-- {comentario}")
-    # time.sleep(0.2) # Descomenta si quieres que vaya lento en modo manual
 
-# --- 1. BURBUJA ---
 def burbuja(arr, ver_pasos=True):
     lista = arr.copy()
     n = len(lista)
-    
     contador_pasos = 0
+    
     for i in range(n):
         swapped = False
         for j in range(0, n - i - 1):
             if lista[j] > lista[j + 1]:
                 lista[j], lista[j + 1] = lista[j + 1], lista[j]
                 swapped = True
-                
+                contador_pasos += 1
                 if ver_pasos:
-                    contador_pasos += 1
                     mostrar_paso(contador_pasos, lista, f"Intercambio {lista[j]} y {lista[j+1]}")
         
         if not swapped:
             break
             
-    return lista
+    return lista, contador_pasos
 
-# --- 2. INSERCIÓN ---
 def insercion(arr, ver_pasos=True):
     lista = arr.copy()
     contador_pasos = 0
@@ -43,17 +37,15 @@ def insercion(arr, ver_pasos=True):
             lista[j + 1] = lista[j]
             j -= 1
             moved = True
+            contador_pasos += 1
             
         lista[j + 1] = key
         
-        if ver_pasos:
-            contador_pasos += 1
-            if moved:
-                mostrar_paso(contador_pasos, lista, f"Insertamos {key}")
+        if ver_pasos and moved:
+            mostrar_paso(contador_pasos, lista, f"Insertamos {key}")
             
-    return lista
+    return lista, contador_pasos
 
-# --- 3. SELECCIÓN ---
 def seleccion(arr, ver_pasos=True):
     lista = arr.copy()
     contador_pasos = 0
@@ -66,13 +58,12 @@ def seleccion(arr, ver_pasos=True):
                 
         if min_idx != i:
             lista[i], lista[min_idx] = lista[min_idx], lista[i]
+            contador_pasos += 1
             if ver_pasos:
-                contador_pasos += 1
                 mostrar_paso(contador_pasos, lista, f"Mínimo encontrado: {lista[i]}")
                 
-    return lista
+    return lista, contador_pasos
 
-# --- GENERADORES DE LISTAS ---
 def pedir_numeros_manual():
     try:
         cantidad = int(input("\n¿Cuántos números deseas ingresar? "))
@@ -81,35 +72,31 @@ def pedir_numeros_manual():
         for i in range(cantidad):
             num = int(input(f"  Dato {i+1}: "))
             numeros.append(num)
-        return numeros, True  # True activa el "ver_pasos"
+        return numeros, True
     except ValueError:
-        print("❌ Error: Solo números enteros.")
+        print("Error: Solo números enteros.")
         return [], False
 
 def generar_aleatorios_1000():
-    print("\n🎲 Generando 1000 números aleatorios entre 1 y 10,000...")
-    # Crea una lista de 1000 números al azar
+    print("\nGenerando 1000 números aleatorios...")
     numeros = [random.randint(1, 10000) for _ in range(1000)]
-    print(f"Listos (Primeros 10: {numeros[:10]}...)")
-    return numeros, False # False desactiva "ver_pasos" para no saturar
+    return numeros, False
 
-# --- MENÚ PRINCIPAL ---
 def main():
     lista_actual = []
     ver_pasos = True
 
     while True:
         print("\n==========================================")
-        print("   MASTER DE ORDENAMIENTO (ALGORITMOS)    ")
+        print("   MASTER DE ORDENAMIENTO (3 METODOS)    ")
         print("==========================================")
-        print("1. Ingresar números manualmente (Paso a paso)")
-        print("2. Generar 1000 números aleatorios (Prueba de velocidad)")
+        print("1. Ingresar números manualmente")
+        print("2. Generar 1000 números aleatorios")
         print("3. Salir")
         
-        opcion_entrada = input("\n👉 ¿Qué deseas hacer? (1-3): ")
+        opcion_entrada = input("\nOpcion (1-3): ")
 
         if opcion_entrada == '3':
-            print("¡Adiós!")
             break
 
         if opcion_entrada == '1':
@@ -127,43 +114,46 @@ def main():
         if not lista_actual:
             continue
 
-        # Sub-menú para elegir algoritmo
-        print("\n--- Selecciona el algoritmo para ordenar ---")
+        print("\n--- Selecciona el algoritmo ---")
         print("a. Burbuja")
         print("b. Inserción")
         print("c. Selección")
         
-        algo = input("👉 Elige (a, b, c): ").lower()
+        algo = input("Elige (a, b, c): ").lower()
         
-        inicio = time.time() # Iniciamos cronómetro
+        inicio = time.time()
+        
+        pasos_totales = 0
         
         if algo == 'a':
-            resultado = burbuja(lista_actual, ver_pasos)
+            
+            resultado, pasos_totales = burbuja(lista_actual, ver_pasos)
             metodo = "Burbuja"
         elif algo == 'b':
-            resultado = insercion(lista_actual, ver_pasos)
+            resultado, pasos_totales = insercion(lista_actual, ver_pasos)
             metodo = "Inserción"
         elif algo == 'c':
-            resultado = seleccion(lista_actual, ver_pasos)
+            
+            resultado, pasos_totales = seleccion(lista_actual, ver_pasos)
             metodo = "Selección"
         else:
             print("Opción inválida")
             continue
             
-        fin = time.time() # Paramos cronómetro
+        fin = time.time()
         tiempo_total = fin - inicio
 
         print("-" * 50)
         if ver_pasos:
-            print(f"✅ LISTA ORDENADA: {resultado}")
+            print(f"LISTA ORDENADA: {resultado}")
         else:
-            # Si son 1000, solo mostramos una parte para no llenar la pantalla
-            print(f"✅ LISTA ORDENADA (Mostrando primeros 20): {resultado[:20]} ...")
-            print(f"✅ LISTA ORDENADA (Mostrando últimos 20): ... {resultado[-20:]}")
+            print(f"LISTA ORDENADA (Inicio): {resultado[:15]}...")
+            print(f"LISTA ORDENADA (Final): ... {resultado[-15:]}")
         
-        print(f"\n⏱️  TIEMPO DE EJECUCIÓN ({metodo}): {tiempo_total:.5f} segundos")
+        print(f"\nPASOS TOTALES REALIZADOS: {pasos_totales}")
+        print(f"TIEMPO DE EJECUCIÓN ({metodo}): {tiempo_total:.5f} segundos")
         print("-" * 50)
-        input("Presiona ENTER para continuar...")
+        input("Enter para continuar...")
 
 if __name__ == "__main__":
     main()
